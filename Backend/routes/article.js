@@ -50,7 +50,7 @@ ROUTER.get('/all', AUTH.authenticateToken, (_req, res, _next) => {
   });
 });
 
-ROUTER.get('/published', AUTH.authenticateToken, (_req, res, _next) => {
+ROUTER.get('/published', (_req, res, _next) => {
   const QUERY = `
     SELECT 
         a.id, a.title, a.content, a.status, a.publication_date,
