@@ -8,16 +8,26 @@ var auth = require('../services/authentication');
 
 ROUTER.post('/add', auth.authenticateToken, (req, res) => {
   const USER = req.body;
-  let query = 'SELECT email, password, status FROM appuser WHERE email=?';
+  let query = `
+    SELECT 
+      email, password, status 
+    FROM appuser 
+    WHERE email=?
+  `;
+
   CONNECTION.query(query, [USER.email], (err, results) => {
     if (!err) {
       if (results.length <= 0) {
-        query =
-          "INSERT INTO appuser(name, email, password, status, isDeletable) VALUES(?, ?, ?, 'false', 'true')";
+        query = `
+          INSERT INTO appuser
+            (name, email, password, status, isDeletable) 
+          VALUES(?, ?, ?, 'false', 'true')
+        `;
+
         CONNECTION.query(
           query,
           [USER.name, USER.email, USER.password],
-          (err, results) => {
+          (err, _results) => {
             if (!err) {
               return res
                 .status(200)
@@ -40,8 +50,13 @@ ROUTER.post('/add', auth.authenticateToken, (req, res) => {
 
 ROUTER.post('/login', (req, res) => {
   const USER = req.body;
-  query =
-    'SELECT email, password, status, isDeletable FROM appuser WHERE email = ?';
+  query = `
+    SELECT 
+      email, password, status, isDeletable 
+    FROM appuser 
+    WHERE email = ?
+  `;
+
   CONNECTION.query(query, [USER.email], (err, results) => {
     if (!err) {
       if (results.length <= 0 || results[0].password != USER.password) {
@@ -68,14 +83,24 @@ ROUTER.post('/login', (req, res) => {
   });
 });
 
-ROUTER.get('/users', auth.authenticateToken, (req, res) => {
+ROUTER.get('/users', auth.authenticateToken, (_req, res) => {
   const TOKEN_PAYLOAD = res.locals;
   let query = '';
 
   if (TOKEN_PAYLOAD.isDeletable === 'false') {
-    query = `SELECT id, name, email, status FROM appuser WHERE isDeletable = 'true'`;
+    query = `
+      SELECT 
+        id, name, email, status 
+      FROM appuser 
+      WHERE isDeletable = 'true'
+    `;
   } else {
-    query = `SELECT id, name, email, status FROM appuser WHERE isDeletable = 'true' AND email !=?`;
+    query = `
+      SELECT 
+        id, name, email, status 
+      FROM appuser 
+      WHERE isDeletable = 'true' AND email !=?
+    `;
   }
 
   CONNECTION.query(query, [TOKEN_PAYLOAD.email], (err, results) => {
@@ -89,7 +114,11 @@ ROUTER.get('/users', auth.authenticateToken, (req, res) => {
 
 ROUTER.post('/updateStatus', auth.authenticateToken, (req, res) => {
   const USER = req.body;
-  const QUERY = `UPDATE appuser SET status = ? WHERE id = ? AND isDeletable = 'true'`;
+  const QUERY = `
+    UPDATE appuser 
+    SET status = ? 
+    WHERE id = ? AND isDeletable = 'true'
+  `;
 
   CONNECTION.query(QUERY, [USER.status, USER.id], (err, results) => {
     if (!err) {
@@ -105,7 +134,12 @@ ROUTER.post('/updateStatus', auth.authenticateToken, (req, res) => {
 
 ROUTER.post('/updateUser', auth.authenticateToken, (req, res) => {
   const USER = req.body;
-  const QUERY = `UPDATE appuser SET name = ?, email = ? WHERE id = ?`;
+  const QUERY = `
+    UPDATE 
+      appuser 
+    SET name = ?, email = ? 
+    WHERE id = ?
+  `;
 
   CONNECTION.query(QUERY, [USER.name, USER.email, USER.id], (err, results) => {
     if (!err) {
@@ -119,7 +153,7 @@ ROUTER.post('/updateUser', auth.authenticateToken, (req, res) => {
   });
 });
 
-ROUTER.get('/checkToken', auth.authenticateToken, (req, res) => {
+ROUTER.get('/checkToken', auth.authenticateToken, (_req, res) => {
   return res.status(200).json({ message: 'true' });
 });
 

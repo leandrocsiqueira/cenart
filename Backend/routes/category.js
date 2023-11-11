@@ -3,10 +3,15 @@ const CONNECTION = require('../connection');
 const ROUTER = EXPRESS.Router();
 const AUTH = require('../services/authentication');
 
-ROUTER.post('/add', AUTH.authenticateToken, (req, res, next) => {
+ROUTER.post('/add', AUTH.authenticateToken, (req, res, _next) => {
   const CATEGORY = req.body;
-  const QUERY = 'INSERT INTO category (name) VALUES(?)';
-  CONNECTION.query(QUERY, [CATEGORY.name], (err, results) => {
+
+  const QUERY = `
+    INSERT INTO category (name) 
+    VALUES(?)
+  `;
+
+  CONNECTION.query(QUERY, [CATEGORY.name], (err, _results) => {
     if (!err) {
       return res.status(200).json({ message: 'Category Added Successfully' });
     } else {
@@ -15,8 +20,13 @@ ROUTER.post('/add', AUTH.authenticateToken, (req, res, next) => {
   });
 });
 
-ROUTER.get('/categories', AUTH.authenticateToken, (req, res, next) => {
-  const QUERY = 'SELECT * FROM category ORDER BY name';
+ROUTER.get('/all', AUTH.authenticateToken, (_req, res, _next) => {
+  const QUERY = `
+    SELECT * 
+    FROM category 
+    ORDER BY name
+  `;
+
   CONNECTION.query(QUERY, (err, results) => {
     if (!err) {
       return res.status(200).json(results);
@@ -26,9 +36,15 @@ ROUTER.get('/categories', AUTH.authenticateToken, (req, res, next) => {
   });
 });
 
-ROUTER.post('/update', AUTH.authenticateToken, (req, res, next) => {
+ROUTER.post('/update', AUTH.authenticateToken, (req, res, _next) => {
   const CATEGORY = req.body;
-  const QUERY = 'UPDATE category SET name = ? WHERE id = ?';
+
+  const QUERY = `
+    UPDATE category 
+    SET name = ? 
+    WHERE id = ?
+  `;
+
   CONNECTION.query(QUERY, [CATEGORY.name, CATEGORY.id], (err, results) => {
     if (!err) {
       if (results.affectedRows == 0) {
