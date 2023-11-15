@@ -1,26 +1,18 @@
 require('dotenv').config();
 
 const express = require('express');
-const conexaoDb = require('../connection');
+const conexaoDb = require('../conexao');
 const rota = express.Router();
 const jwt = require('jsonwebtoken');
-const autenticacao = require('../services/authentication');
+const autenticacao = require('../services/autenticacao');
 
 rota.post(
   '/adicionarUsuario',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const usuario = requisicao.body;
-    let operacaoDql = `
-    SELECT 
-      email, 
-      senha, 
-      status 
-    FROM 
-      usuario 
-    WHERE 
-      email=?;
-  `;
+    let operacaoDql = `SELECT email, senha, status FROM usuario 
+    WHERE email=?;`;
 
     conexaoDb.query(
       operacaoDql,
@@ -28,11 +20,8 @@ rota.post(
       (erroConexao, registroRetornado) => {
         if (!erroConexao) {
           if (registroRetornado.length <= 0) {
-            operacaoDql = `
-              INSERT INTO 
-                usuario (nome, email, senha, status, podeSerExcluido) 
-              VALUES(?, ?, ?, 'false', 'true');
-            `;
+            operacaoDql = `INSERT INTO usuario (nome, email, senha, status, podeSerExcluido) 
+              VALUES(?, ?, ?, 'false', 'true');`;
 
             conexaoDb.query(
               operacaoDql,
@@ -64,17 +53,9 @@ rota.post(
 
 rota.post('/login', (requisicao, respostaRequisicao) => {
   const dadosInformados = requisicao.body;
-  let operacaoDql = `
-    SELECT 
-      email, 
-      senha, 
-      status, 
-      podeSerExcluido 
-    FROM 
-      usuario 
-    WHERE 
-      email = ?;
-  `;
+  let operacaoDql = `SELECT email, senha, status, podeSerExcluido 
+    FROM usuario 
+    WHERE email = ?;`;
 
   conexaoDb.query(
     operacaoDql,
@@ -97,7 +78,7 @@ rota.post('/login', (requisicao, respostaRequisicao) => {
             email: registroRetornado[0].email,
             podeSerExcluido: registroRetornado[0].podeSerExcluido,
           };
-          const tokenAcesso = jwt.sign(usuario, process.env.ACCESS_TOKEN, {
+          const tokenAcesso = jwt.sign(usuario, process.env.TOKEN_ACESSO, {
             expiresIn: '8h',
           });
           respostaRequisicao.status(200).json({ token: tokenAcesso });
@@ -113,35 +94,17 @@ rota.post('/login', (requisicao, respostaRequisicao) => {
 
 rota.get(
   '/listarUsuarios',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (_requisicao, respostaRequisicao) => {
     const payloadToken = respostaRequisicao.locals;
     let operacaoDql = '';
 
     if (payloadToken.isDeletable === 'false') {
-      operacaoDql = `
-        SELECT 
-          id, 
-          nome, 
-          email, 
-          status 
-        FROM 
-          usuario 
-        WHERE 
-          podeSerExcluido = 'true';
-      `;
+      operacaoDql = `SELECT id, nome, email, status FROM usuario 
+        WHERE podeSerExcluido = 'true';`;
     } else {
-      operacaoDql = `
-        SELECT 
-          id, 
-          nome, 
-          email, 
-          status 
-        FROM 
-          usuario 
-        WHERE 
-          podeSerExcluido = 'true' AND email !=?;
-      `;
+      operacaoDql = `SELECT id, nome, email, status FROM usuario 
+        WHERE podeSerExcluido = 'true' AND email !=?;`;
     }
 
     conexaoDb.query(
@@ -160,17 +123,11 @@ rota.get(
 
 rota.post(
   '/atualizarNomeEmail',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const usuario = requisicao.body;
-    const operacaoDql = `
-      UPDATE 
-        usuario 
-      SET 
-        nome = ?, 
-        email = ? 
-      WHERE id = ?;
-    `;
+    const operacaoDql = `UPDATE usuario SET nome = ?, email = ? 
+      WHERE id = ?;`;
 
     conexaoDb.query(
       operacaoDql,
@@ -195,17 +152,11 @@ rota.post(
 
 rota.post(
   '/atualizarStatus',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const dadosInformados = requisicao.body;
-    const operacaoDql = `
-    UPDATE 
-      usuario 
-    SET 
-      status = ? 
-    WHERE 
-      id = ? AND podeSerExcluido = 'true';
-  `;
+    const operacaoDql = `UPDATE usuario SET status = ? 
+    WHERE id = ? AND podeSerExcluido = 'true';`;
     conexaoDb.query(
       operacaoDql,
       [dadosInformados.status, dadosInformados.id],
@@ -229,7 +180,7 @@ rota.post(
 
 rota.get(
   '/verificarToken',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (_requisicao, respostaRequisicao) => {
     return respostaRequisicao.status(200).json({ message: 'true' });
   }

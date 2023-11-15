@@ -1,11 +1,11 @@
 const express = require('express');
-const conexao = require('../connection');
+const conexao = require('../conexao');
 const rota = express.Router();
-const autenticacao = require('../services/authentication');
+const autenticacao = require('../services/autenticacao');
 
 rota.post(
   '/adicionar',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const categoria = requisicao.body;
     const operacaoDml = `INSERT INTO categoria (nome) VALUES(?)`;
@@ -23,7 +23,7 @@ rota.post(
 
 rota.get(
   '/listarCategorias',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (_requisicao, respostaRequisicao) => {
     const operacaoDql = `SELECT * FROM categoria ORDER BY nome;`;
     conexao.query(operacaoDql, (erroConexao, registrosRetornados) => {
@@ -38,7 +38,7 @@ rota.get(
 
 rota.post(
   '/atualizarCategoria',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const categoria = requisicao.body;
     const operacaoDml = `UPDATE categoria SET nome = ? WHERE id = ?;`;

@@ -1,11 +1,11 @@
 const express = require('express');
-const conexaoDb = require('../connection');
+const conexaoDb = require('../conexao');
 const rota = express.Router();
-const autenticacao = require('../services/authentication');
+const autenticacao = require('../services/autenticacao');
 
 rota.post(
   '/adicionarArtigo',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const artigo = requisicao.body;
     const operacaoDml = `INSERT INTO artigo 
@@ -35,13 +35,13 @@ rota.post(
 
 rota.get(
   '/listarTodosArtigos',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (_requisicao, respostaRequisicao) => {
     const operacaoDql = `SELECT a.id, a.titulo, a.conteudo, 
-      c.id as categoryId, c.name as categoryName, 
+      c.id as categoriaId, c.nome as categoriaNome, 
       a.dataPublicacao, a.status 
     FROM artigo AS a
-    INNER JOIN category AS c
+    INNER JOIN categoria AS c
     ON a.categoriaId = c.id;`;
 
     conexaoDb.query(operacaoDql, (erroConexao, registrosRetornados) => {
@@ -57,9 +57,9 @@ rota.get(
 rota.get('/listarArtigosPublicados', (_requisicao, respostaRequisicao) => {
   const operacaoDql = `SELECT a.id, a.titulo, a.conteudo, 
       a.status, a.dataPublicacao, 
-      c.id as categoryId, c.name as categoryName 
+      c.id as categoriaId, c.nome as categoriaNome
     FROM artigo AS a
-    INNER JOIN category AS c
+    INNER JOIN categoria AS c
     WHERE (a.categoriaId = c.id AND a.status = 'publicado');`;
 
   conexaoDb.query(operacaoDql, (erroConexao, registrosRetornados) => {
@@ -73,7 +73,7 @@ rota.get('/listarArtigosPublicados', (_requisicao, respostaRequisicao) => {
 
 rota.put(
   '/atualizarArtigo',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const artigo = requisicao.body;
     const operacaoDml = `UPDATE artigo SET 
@@ -113,7 +113,7 @@ rota.put(
 
 rota.delete(
   '/excluirArtigo/:id',
-  autenticacao.authenticateToken,
+  autenticacao.autenticarToken,
   (requisicao, respostaRequisicao) => {
     const idArtigo = requisicao.params.id;
     const operacaoDml = `DELETE FROM artigo WHERE id = ?;`;
