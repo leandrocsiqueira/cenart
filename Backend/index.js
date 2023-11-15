@@ -1,15 +1,15 @@
-const EXPRESS = require('express');
-const CORS = require('cors');
-const APP = EXPRESS();
-const APP_USER_ROUTE = require('./routes/appuser');
-const CATEGORY_ROUTE = require('./routes/category');
-const ARTICLE_ROUTE = require('./routes/article');
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const rotaUsuario = require('./routes/usuario');
+const rotaCategoria = require('./routes/categoria');
+const rotaArtigo = require('./routes/artigo');
 
-APP.use(CORS());
-APP.use(EXPRESS.json());
+app.use(cors());
+app.use(express.json());
 
-APP.use('/appuser', APP_USER_ROUTE);
-APP.use('/category', CATEGORY_ROUTE);
-APP.use('/article', ARTICLE_ROUTE);
+app.use('/usuario', rotaUsuario);
+app.use('/categoria', rotaCategoria);
+app.use('/artigo', rotaArtigo);
 
-module.exports = APP;
+module.exports = app;
